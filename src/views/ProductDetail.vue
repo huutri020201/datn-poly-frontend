@@ -99,10 +99,11 @@
 <script setup>
 
 import { ref, computed, onMounted } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router" 
 import axios from "axios"
 
 const route = useRoute()
+const router = useRouter()
 
 const product = ref(null)
 
@@ -112,47 +113,47 @@ const selectedSize = ref(null)
 const selectedVariant = ref(null)
 
 const fetchProduct = async () => {
+  try {
+    const res = await axios.get(`http://localhost:8080/products/${route.params.id}`)
+    product.value = res.data.result || res.data; 
 
-  try{
+    if (product.value?.variants?.length) {
+      const defaultVariant = product.value.variants.find(v => v.active); 
+      if (defaultVariant) {
+        selectedVariant.value = defaultVariant; 
+        selectedColor.value = defaultVariant.attributes?.color;
+        selectedSize.value = defaultVariant.attributes?.size;
+      }
+    }
 
-    const res = await axios.get(
-      `http://localhost:8080/products/${route.params.id}`
-    )
-
-    product.value = res.data.result
-
+  } catch(err) {
+    console.error("Load product error:", err)
   }
-  catch(err){
-
-    console.error("Load product error:",err)
-
-  }
-
 }
 
 onMounted(fetchProduct)
 
 
 
-const colors = computed(()=>{
-
+const colors = computed(() => {
   if(!product.value) return []
-
   return [...new Set(
-    product.value.variants.map(v=>v.attributes.color)
+    product.value.variants
+      .filter(v => v.active) 
+      .map(v => v.attributes?.color) 
+      .filter(color => color) 
   )]
-
 })
 
 
-const sizes = computed(()=>{
-
+const sizes = computed(() => {
   if(!product.value) return []
-
   return [...new Set(
-    product.value.variants.map(v=>v.attributes.size)
+    product.value.variants
+      .filter(v => v.active) 
+      .map(v => v.attributes?.size) 
+      .filter(size => size)
   )]
-
 })
 
 
@@ -172,16 +173,13 @@ const selectSize = (size)=>{
 
 
 const findVariant = ()=>{
-
   if(!product.value) return
 
-  selectedVariant.value = product.value.variants.find(v=>
-
-    v.attributes.color === selectedColor.value &&
-    v.attributes.size === selectedSize.value
-
+  selectedVariant.value = product.value.variants.find(v => 
+    v.active && 
+    v.attributes?.color === selectedColor.value && 
+    v.attributes?.size === selectedSize.value      
   )
-
 }
 
 
@@ -218,10 +216,39 @@ const formatPrice = (price)=>{
 }
 
 
-const addToCart = ()=>{
+const addToCart = async () => {
+  if (!selectedVariant.value) {
+    alert("Vui lòng chọn phân loại hàng!");
+    return;
+  }
 
-  alert("Đã thêm vào giỏ: " + selectedVariant.value.sku)
+  const token = localStorage.getItem("accessToken");
+  
+  if (!token) {
+    alert("Bạn cần đăng nhập để thêm vào giỏ hàng!");
+    return;
+  }
 
+  try {
+    await axios.post('http://localhost:8080/cart/add', {
+      productId: product.value.id,         
+      variantId: selectedVariant.value.id, 
+      quantity: 1,                         
+      unitPrice: selectedPrice.value       
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    alert("Đã thêm " + selectedVariant.value.sku + " vào giỏ hàng thành công!");
+    router.push('/cart');
+    
+
+  } catch (error) {
+    console.error("Lỗi khi thêm vào giỏ:", error);
+    alert("Không thể thêm vào giỏ hàng. Vui lòng thử lại!");
+  }
 }
 
 </script>
