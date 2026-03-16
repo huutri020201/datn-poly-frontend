@@ -24,6 +24,11 @@ const routes = [
     path: "/product/:id",
     component: () => import("@/views/ProductDetail.vue")
   },
+  {
+    path: "/cart",
+    name: "cart",
+    component: () => import("@/views/Cart.vue")
+  },
   /* 🛠️ PHẦN ADMIN ĐƯỢC CẬP NHẬT Ở ĐÂY */
   {
     path: '/admin',

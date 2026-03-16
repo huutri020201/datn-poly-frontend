@@ -12,7 +12,6 @@
         <router-link to="/products" class="nav-link-custom"
           >Phụ kiện</router-link
         >
-        <router-link to="/cart" class="nav-link-custom">Giỏ hàng</router-link>
         <router-link to="/info" class="nav-link-custom">Giới thiệu</router-link>
         <router-link to="/contact" class="nav-link-custom">Liên hệ</router-link>
         <div class="ms-3 d-flex gap-2">

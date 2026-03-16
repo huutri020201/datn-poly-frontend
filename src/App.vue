@@ -1,6 +1,7 @@
 <script setup>
 import Header from './components/layout/Header.vue'
 import Footer from './components/layout/Footer.vue'
+import FloatingCart from './components/FloatingCart.vue'
 </script>
 
 <template>
@@ -10,6 +11,7 @@ import Footer from './components/layout/Footer.vue'
       <router-view /> 
     </main>
     <Footer /> 
+    <FloatingCart />
   </div>
 </template>
 

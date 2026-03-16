@@ -100,7 +100,9 @@
 
 import { ref, computed, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router" 
+import { cartCount } from '@/cartState';
 import axios from "axios"
+
 
 const route = useRoute()
 const router = useRouter()
@@ -241,9 +243,8 @@ const addToCart = async () => {
       }
     });
 
+    cartCount.value += 1;
     alert("Đã thêm " + selectedVariant.value.sku + " vào giỏ hàng thành công!");
-    router.push('/cart');
-    
 
   } catch (error) {
     console.error("Lỗi khi thêm vào giỏ:", error);

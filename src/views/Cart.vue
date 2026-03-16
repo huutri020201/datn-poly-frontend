@@ -84,6 +84,7 @@
 
 <script>
 import axios from "axios";
+import { cartCount } from '@/cartState';
 
 export default {
   name: "Cart",
@@ -101,6 +102,15 @@ export default {
         (sum, item) => sum + item.unitPrice * item.quantity,
         0
       );
+    }
+  },
+
+  watch: {
+    cartItems: {
+      deep: true, 
+      handler(newItems) {
+        cartCount.value = newItems.reduce((sum, item) => sum + item.quantity, 0);
+      }
     }
   },
 
