@@ -239,7 +239,33 @@ export default {
     },
 
     checkout() {
-      alert(`Chuyển sang trang thanh toán. Tổng tiền: ${this.formatPrice(this.selectedTotalAmount)}`);
+      if (this.selectedItems.length === 0) {
+        return alert("Vui lòng chọn sản phẩm!");
+        }
+
+      const selectedCartItems = this.cartItems.filter(item =>
+      this.selectedItems.includes(item.variantId)
+    );
+
+      const order = {
+        customerId: null, 
+        shippingAddress: "",
+        note: "",
+        totalAmount: this.selectedTotalAmount,
+        items: selectedCartItems.map(item => ({
+        externalItemId: item.variantId,
+        itemType: "product",
+        itemName: item.productName,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        subtotal: item.unitPrice * item.quantity
+      }))
+    };
+
+      this.$router.push({
+      path: "/orders",
+      state: { order }
+      });
     },
 
     formatPrice(price) {
@@ -258,14 +284,12 @@ export default {
 </script>
 
 <style scoped>
-/* Tổng thể nền xám nhẹ để bật khối trắng */
 .cart-page-wrapper {
   background-color: #f5f5f5;
   min-height: calc(100vh - 100px);
-  padding-bottom: 80px; /* Dành chỗ cho thanh sticky bottom */
+  padding-bottom: 80px; 
 }
 
-/* Chia cột bằng Grid/Flex để thẳng hàng giống Table */
 .col-checkbox { width: 5%; justify-content: center; }
 .col-product  { width: 45%; }
 .col-price    { width: 15%; }
@@ -273,7 +297,6 @@ export default {
 .col-total    { width: 10%; }
 .col-action   { width: 10%; }
 
-/* Tên sản phẩm giới hạn dòng */
 .product-name {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -282,12 +305,10 @@ export default {
   text-overflow: ellipsis;
 }
 
-/* Nút xóa hover đỏ */
 .btn-delete:hover {
   color: #ee4d2d !important;
 }
 
-/* Checkbox vuông vắn mang thương hiệu riêng */
 .brand-checkbox {
   width: 1.1rem;
   height: 1.1rem;
@@ -300,7 +321,6 @@ export default {
   border-color: #ee4d2d;
 }
 
-/* Ẩn mũi tên của thẻ input number */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none; margin: 0;
@@ -309,14 +329,12 @@ input[type="number"] { -moz-appearance: textfield; }
 
 .cursor-pointer { cursor: pointer; }
 
-/* Nút Checkout mờ đi nếu chưa chọn hàng */
 .checkout-btn.disabled {
   opacity: 0.7;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-/* THANH STICKY BOTTOM */
 .checkout-sticky-bar {
   position: fixed;
   bottom: 0;

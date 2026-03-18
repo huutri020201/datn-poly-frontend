@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -12,6 +12,11 @@ const loginForm = reactive({
 });
 
 const errorMessage = ref("");
+const rememberMe = ref(false);
+
+onMounted(() => {
+  rememberMe.value = localStorage.getItem("rememberMe") === "true";
+});
 
 const handleLogin = async () => {
   errorMessage.value = "";
@@ -23,15 +28,30 @@ const handleLogin = async () => {
 
   try {
     await authStore.loginUser(loginForm);
+    localStorage.setItem("rememberMe", rememberMe.value);
+    if (!rememberMe.value) {
+      sessionStorage.setItem("accessToken", authStore.accessToken);
+      sessionStorage.setItem("refreshToken", authStore.refreshToken);
+      sessionStorage.setItem("role", authStore.role);
 
-    // Login thành công → chuyển trang
-    router.push("/admin");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("role");
+    }
+
+    if (authStore.role === "ROLE_ADMIN") {
+      router.push("/admin"); 
+    } else {
+      router.push("/"); 
+    }
+
   } catch (error) {
     errorMessage.value =
       error.response?.data?.message || "Sai tài khoản hoặc mật khẩu!";
   }
 };
 </script>
+
 <template>
   <div>
     <h2 class="text-center text-secondary">Đăng nhập</h2>
@@ -58,6 +78,18 @@ const handleLogin = async () => {
             placeholder="Nhập mật khẩu"
             @keyup.enter="handleLogin"
           />
+        </div>
+
+        <div class="form-check mb-3">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            v-model="rememberMe"
+            id="rememberMe"
+          />
+          <label class="form-check-label" for="rememberMe">
+            Ghi nhớ đăng nhập
+          </label>
         </div>
 
         <div v-if="errorMessage" class="alert alert-danger py-2 small">
