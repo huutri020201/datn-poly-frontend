@@ -28,26 +28,41 @@ const handleLogin = async () => {
 
   try {
     await authStore.loginUser(loginForm);
+    
     localStorage.setItem("rememberMe", rememberMe.value);
-    if (!rememberMe.value) {
+
+    const userToSave = JSON.stringify(authStore.user);
+
+    if (rememberMe.value) {
+      localStorage.setItem("accessToken", authStore.accessToken);
+      localStorage.setItem("refreshToken", authStore.refreshToken);
+      localStorage.setItem("role", authStore.role);
+      localStorage.setItem("user", userToSave);
+
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
+      sessionStorage.removeItem("role");
+      sessionStorage.removeItem("user");
+    } else {
       sessionStorage.setItem("accessToken", authStore.accessToken);
       sessionStorage.setItem("refreshToken", authStore.refreshToken);
       sessionStorage.setItem("role", authStore.role);
+      sessionStorage.setItem("user", userToSave);
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("role");
+      localStorage.removeItem("user");
     }
 
     if (authStore.role === "ROLE_ADMIN") {
-      router.push("/admin"); 
+      router.push("/admin");
     } else {
-      router.push("/"); 
+      router.push("/");
     }
 
   } catch (error) {
-    errorMessage.value =
-      error.response?.data?.message || "Sai tài khoản hoặc mật khẩu!";
+    errorMessage.value = error.response?.data?.message || "Sai tài khoản hoặc mật khẩu!";
   }
 };
 </script>

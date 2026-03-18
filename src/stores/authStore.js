@@ -14,7 +14,6 @@ export const useAuthStore = defineStore("auth", {
   actions: {
     async loginUser(payload) {
       this.loading = true;
-
       try {
         const res = await login(payload);
         const data = res.data.result;
@@ -22,15 +21,17 @@ export const useAuthStore = defineStore("auth", {
         this.accessToken = data.accessToken;
         this.refreshToken = data.refreshToken;
 
-        // decode token lấy role
         const decoded = jwtDecode(data.accessToken);
-        const role = decoded.scope; // "ROLE_ADMIN"
-
-        this.role = role;
+        this.role = decoded.scope; 
+        this.user = {
+          id: decoded.sub, 
+          role: decoded.scope
+        };
 
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
-        localStorage.setItem("role", role);
+        localStorage.setItem("role", this.role);
+        localStorage.setItem("user", JSON.stringify(this.user)); 
 
       } finally {
         this.loading = false;
