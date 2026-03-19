@@ -127,9 +127,12 @@ const handleLogin = async () => {
         </div>
 
         <div class="text-center mt-4">
-          <a href="#" class="text-dark d-block mb-2 text-decoration-underline"
-            >Quên mật khẩu?</a
+          <router-link
+            to="/forgot-password"
+            class="text-dark d-block text-decoration-underline"
           >
+            Quên mật khẩu?
+          </router-link>
           <router-link
             to="/register"
             class="text-dark d-block text-decoration-underline"

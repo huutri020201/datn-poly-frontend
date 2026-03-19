@@ -55,7 +55,23 @@ const routes = [
   component: () => import('@/views/PaymentCallback.vue')
 },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/ForgotPW.vue')
+  },
+  {
+    path: '/verify-email',
+    name: 'VerifyEmail',
+    component: () => import('@/views/VerifyEmail.vue')
+  },
+  {
+    path: '/profile-update',
+    name: 'ProfileUpdate',
+    component: () => import('@/views/ProfileUpdate.vue')
+  },
+  {
     path: "/admin",
+    component: () => import("@/components/layout/AdminDashboard.vue"),
     component: () => import("@/components/layout/AdminDashboard.vue"),
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
