@@ -33,7 +33,13 @@ const routes = [
   },
   {
     path: "/orders",
-    name: "orders",
+    name: "orders-list",
+    component: () => import("@/views/MyOrdersList.vue"), 
+    meta: { requiresAuth: true },
+  },  
+  {
+    path: "/orders/:id",
+    name: "order-detail",
     component: () => import("@/views/Orders.vue"),
     meta: { requiresAuth: true },
   },
@@ -68,6 +74,16 @@ const routes = [
     path: '/profile-update',
     name: 'ProfileUpdate',
     component: () => import('@/views/ProfileUpdate.vue')
+  },
+  {
+    path: '/booking',
+    name: 'Booking',
+    component: () => import('@/views/BookingList.vue')
+  },
+  {
+    path: "/feedback",
+    name: "Feedback",
+    component: () => import("@/views/Feedback.vue"),
   },
   {
     path: "/admin",
