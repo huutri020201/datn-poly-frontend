@@ -136,12 +136,6 @@ export default {
 
       } catch (e) {
         console.error("Lỗi load profile:", e);
-        if (e.response && e.response.status === 500) {
-          alert("Phiên đăng nhập có vấn đề hoặc đã hết hạn. Vui lòng đăng nhập lại!");
-          localStorage.removeItem("accessToken");
-          sessionStorage.removeItem("accessToken");
-          this.$router.push("/login"); 
-        }
       }
     },
     async fetchAddress() {
