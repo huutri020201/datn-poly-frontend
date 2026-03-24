@@ -88,7 +88,6 @@ const routes = [
   {
     path: "/admin",
     component: () => import("@/components/layout/AdminDashboard.vue"),
-    component: () => import("@/components/layout/AdminDashboard.vue"),
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
       {
@@ -100,6 +99,11 @@ const routes = [
         path: "products",
         name: "admin-products",
         component: () => import("@/views/admin/ProductManagement.vue"),
+      },
+      {
+        path: "feedback",
+        name: "admin-feedback",
+        component: () => import("@/views/admin/FeedbackManagement.vue"),
       },
     ],
   },

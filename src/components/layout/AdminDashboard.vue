@@ -16,9 +16,9 @@
           Products
         </router-link>
 
-        <button class="btn btn-sm btn-danger ms-3">
-          Logout
-        </button>
+        <router-link to="/admin/feedback" class="nav-item">
+          Feedbacks
+        </router-link>
       </nav>
     </header>
 
