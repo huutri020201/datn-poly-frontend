@@ -131,7 +131,7 @@ const formatCurrency = (value) => {
 
 
 const openBookingModal = (pitch) => {
-  const token = localStorage.getItem('accessToken');
+  const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
   
   if (!token) {
     alert("Vui lòng đăng nhập tài khoản để có thể đặt sân bạn nhé!");

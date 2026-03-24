@@ -14,6 +14,9 @@
         <router-link to="/admin/products" class="nav-item">
           Products
         </router-link>
+        <router-link to="/admin/orders" class="nav-item">
+          Orders
+        </router-link>
         <router-link to="/admin/bookings" class="nav-item">
           Bookings
         </router-link>

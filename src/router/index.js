@@ -112,6 +112,11 @@ const routes = [
         component: () => import("@/views/admin/ProductManagement.vue"),
       },
       {
+        path: "orders",
+        name: "admin-orders",
+        component: () => import("@/views/admin/OrderManagement.vue"),
+      },
+      {
         path: "bookings",
         name: "admin-bookings",
         component: () => import("@/views/admin/BookingManagement.vue"),
@@ -125,8 +130,8 @@ const routes = [
         path: "promotions",
         name: "admin-promotions",
         component: () => import("@/views/admin/PromotionManagement.vue"),
-      }, // Đã thêm dấu phẩy ở đây
-      {  // Đã thêm dấu ngoặc nhọn mở ở đây
+      }, 
+      {  
         path: "feedback",
         name: "admin-feedback",
         component: () => import("@/views/admin/FeedbackManagement.vue"),

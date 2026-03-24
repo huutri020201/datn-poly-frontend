@@ -285,7 +285,7 @@ const addToCart = async () => {
     return;
   }
 
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
   
   if (!token) {
     alert("Bạn cần đăng nhập để thêm vào giỏ hàng!");

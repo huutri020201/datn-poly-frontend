@@ -216,7 +216,7 @@ export default {
 
       this.isProcessing = true;
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
         const res = await axios.post(
           "http://localhost:8080/orders",
           this.form,
@@ -233,7 +233,7 @@ export default {
         } else {
           // Thành công với COD
           alert("Đặt hàng thành công!");
-          this.$router.push("/my-orders");
+          this.$router.push("/orders");
         }
       } catch (error) {
         alert(error.response?.data?.message || "Lỗi khi đặt hàng");

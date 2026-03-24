@@ -432,7 +432,7 @@ export default {
   },
   methods: {
     getAuthHeaders() {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
       return token ? { Authorization: `Bearer ${token}` } : {};
     },
     // Cart.vue
@@ -463,8 +463,9 @@ export default {
         this.cartItems = res.data.items || res.data.result?.items || [];
       } catch (error) {
         if (error.response?.status === 401) {
-          localStorage.removeItem("accessToken");
-          this.$router.push("/login");
+            localStorage.clear();
+            sessionStorage.clear();
+            this.$router.push("/login");
         }
       } finally {
         this.loading = false;

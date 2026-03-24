@@ -2,9 +2,12 @@ import axios from "axios"
 
 const API = "http://localhost:8080/users"
 
-const authHeader = () => ({
-  Authorization: "Bearer " + localStorage.getItem("accessToken")
-})
+const authHeader = () => {
+  const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+  return {
+    Authorization: "Bearer " + token
+  };
+}
 
 export const getAllUsers = () => {
   return axios.get(API, { headers: authHeader() })

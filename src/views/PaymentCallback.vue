@@ -29,7 +29,7 @@
         >
           Về Trang Chủ
         </button>
-        <button class="btn btn-danger px-4" @click="$router.push('/my-orders')">
+        <button class="btn btn-danger px-4" @click="$router.push('/orders')">
           Xem Đơn Hàng
         </button>
       </div>
