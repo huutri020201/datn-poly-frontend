@@ -87,9 +87,19 @@ const routes = [
     component: () => import('@/views/BookingList.vue')
   },
   {
+  path: '/bookings/:id',
+  name: 'booking-detail',
+  component: () => import('@/views/BookingDetail.vue')
+  },
+  {
     path: "/feedback",
     name: "Feedback",
     component: () => import("@/views/Feedback.vue"),
+  },
+  {
+    path: "/my-bookings",
+    name: "mybookings",
+    component: () => import("@/views/MyBookingList.vue"),
   },
   {
     path: "/admin",
@@ -107,6 +117,21 @@ const routes = [
         name: "admin-products",
         component: () => import("@/views/admin/ProductManagement.vue"),
       },
+      {
+        path: "bookings",
+        name: "admin-bookings",
+        component: () => import("@/views/admin/BookingManagement.vue"),
+      },
+      {
+        path: "pitches",
+        name: "admin-pitches",
+        component: () => import("@/views/admin/PitchManagement.vue"),
+      },
+      {
+        path: "promotions",
+        name: "admin-promotions",
+        component: () => import("@/views/admin/PromotionManagement.vue"),
+      }
     ],
   },
 ];
