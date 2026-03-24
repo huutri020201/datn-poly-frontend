@@ -11,11 +11,18 @@
         <router-link to="/admin/users" class="nav-item">
           Users
         </router-link>
-
         <router-link to="/admin/products" class="nav-item">
           Products
         </router-link>
-
+        <router-link to="/admin/bookings" class="nav-item">
+          Bookings
+        </router-link>
+        <router-link to="/admin/pitches" class="nav-item">
+          Pitches
+        </router-link>
+        <router-link to="/admin/promotions" class="nav-item">
+          Promotions
+        </router-link>
         <router-link to="/admin/feedback" class="nav-item">
           Feedbacks
         </router-link>
