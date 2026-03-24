@@ -46,7 +46,7 @@
           </div>
 
           <div class="mb-4">
-            <label class="form-label fw-bold d-block">Hình ảnh thực tế (Tải từ máy tính)</label>
+            <label class="form-label fw-bold d-block">Hình ảnh thực tế </label>
             <div class="input-group">
               <input type="file" ref="fileInput" @change="handleFileUpload" class="d-none" accept="image/*" multiple>
               <button @click="triggerUpload" type="button" class="btn btn-outline-success shadow-none">
@@ -94,7 +94,6 @@
           
           <div v-if="myFeedback.adminReply" class="admin-reply mt-3 mb-3 p-3 bg-white border-start border-success border-4 rounded shadow-sm">
             <div class="d-flex align-items-center mb-2">
-              <i class="bi bi-shop text-success me-2 fs-5"></i>
               <strong class="text-success">Phản hồi từ Người bán</strong>
             </div>
             <p class="mb-0 text-dark">{{ myFeedback.adminReply }}</p>

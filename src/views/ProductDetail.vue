@@ -15,7 +15,6 @@
         >
       </div>
 
-
       <div class="col-lg-4 col-md-4 px-lg-4 mb-4">
         <h3 class="fw-bold">{{ product.name }}</h3>
 
@@ -68,7 +67,6 @@
         </button>
       </div>
 
-
       <div class="col-lg-4 col-md-4 border-start">
         <h5 class="fw-bold border-bottom pb-2 mb-3">Đánh giá sản phẩm ({{ feedbacks.length }})</h5>
 
@@ -83,10 +81,14 @@
               
               <div class="d-flex align-items-center mb-2">
                 <div class="avatar-circle bg-dark text-white me-2 d-flex justify-content-center align-items-center shadow-sm">
-                  {{ fb.userName ? fb.userName.charAt(0).toUpperCase() : 'U' }}
+                  {{ fb.userName ? fb.userName.charAt(0).toUpperCase() : 'K' }}
                 </div>
                 <div>
-                  <div class="fw-bold" style="font-size: 0.95rem;">{{ fb.userName || 'Khách hàng ẩn danh' }}</div>
+                  <div class="fw-bold" style="font-size: 0.95rem;">
+                    {{ maskName(fb.userName || fb.userId) }}
+                    <span v-if="fb.phoneNumber" class="text-muted fw-normal small ms-1">{{ maskPhone(fb.phoneNumber) }}</span>
+                  </div>
+                  
                   <div class="text-warning" style="font-size: 0.8rem;">
                     <i v-for="s in 5" :key="s" class="bi" :class="s <= fb.rating ? 'bi-star-fill' : 'bi-star'"></i>
                     <span class="text-muted ms-2">{{ formatDate(fb.createdAt) }}</span>
@@ -97,21 +99,35 @@
               <p class="mb-2 text-dark" style="font-size: 0.95rem;">{{ fb.comment }}</p>
 
               <div v-if="fb.imageUrls" class="d-flex gap-2 flex-wrap mb-2">
-                <img v-for="(img, idx) in fb.imageUrls.split(',')" :key="idx" :src="img.trim()" class="feedback-img rounded border" />
+                <img 
+                  v-for="(img, idx) in fb.imageUrls.split(',')" 
+                  :key="idx" 
+                  :src="img.trim()" 
+                  class="feedback-img rounded border" 
+                  @click="openLightbox(img.trim())"
+                  title="Nhấn để phóng to"
+                />
               </div>
 
               <div v-if="fb.adminReply" class="admin-reply bg-light p-2 mt-2 rounded border-start border-4 border-secondary">
-                <div class="fw-bold mb-1" style="font-size: 0.85rem;"><i class="bi bi-shop me-1"></i>Phản hồi:</div>
+                <div class="fw-bold mb-1" style="font-size: 0.85rem;">Phản hồi từ Người bán:</div>
                 <div class="text-muted" style="font-size: 0.85rem;">{{ fb.adminReply }}</div>
               </div>
 
             </div>
           </div>
-          
         </div>
       </div>
 
     </div>
+
+    <div v-if="showLightbox" class="lightbox-overlay" @click.self="closeLightbox">
+      <div class="lightbox-content">
+        <button class="btn-close-lightbox" @click="closeLightbox">&times;</button>
+        <img :src="selectedFullImage" class="img-fluid rounded shadow-lg">
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -130,6 +146,35 @@ const feedbacks = ref([])
 const selectedColor = ref(null)
 const selectedSize = ref(null)
 const selectedVariant = ref(null)
+const showLightbox = ref(false)
+const selectedFullImage = ref('')
+
+const openLightbox = (url) => {
+  selectedFullImage.value = url;
+  showLightbox.value = true;
+  document.body.style.overflow = 'hidden'; 
+}
+
+const closeLightbox = () => {
+  showLightbox.value = false;
+  selectedFullImage.value = '';
+  document.body.style.overflow = 'auto'; 
+}
+
+const maskName = (name) => {
+  if (!name) return "Khách hàng";
+  const str = String(name).trim();
+  if (str.length > 20) return "Khách hàng"; 
+  if (str.length <= 2) return str.charAt(0) + "***";
+  return str.charAt(0) + "***" + str.charAt(str.length - 1);
+};
+
+const maskPhone = (phone) => {
+  if (!phone) return ""; 
+  const str = String(phone).trim();
+  if (str.length <= 3) return "***";
+  return "*******" + str.slice(-3);
+};
 
 const fetchProduct = async () => {
   try {
@@ -268,7 +313,6 @@ const addToCart = async () => {
 </script>
 
 <style scoped>
-/* Thuộc tính cơ bản từ code cũ của bạn */
 .product-image{
   border-radius:8px;
   border:1px solid #eee;
@@ -279,7 +323,6 @@ button.active{
   color:white;
 }
 
-/* Các css phụ trợ cho khu vực Feedback bên phải */
 .feedback-scrollable {
   max-height: 550px; 
   overflow-y: auto;
@@ -305,9 +348,64 @@ button.active{
   width: 60px;
   height: 60px;
   object-fit: cover;
+  cursor: zoom-in; 
+  transition: transform 0.2s;
+}
+
+.feedback-img:hover {
+  transform: scale(1.05); 
 }
 
 .admin-reply {
   font-size: 0.9rem;
+}
+
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  cursor: zoom-out;
+  padding: 20px;
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 80vh; 
+  object-fit: contain;
+  border: 3px solid white;
+  border-radius: 8px;
+}
+
+.btn-close-lightbox {
+  position: absolute;
+  top: -40px;
+  right: -10px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2.5rem;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10000;
+}
+
+.btn-close-lightbox:hover {
+  color: #ffc107;
 }
 </style>

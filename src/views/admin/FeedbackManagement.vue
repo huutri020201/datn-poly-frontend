@@ -16,16 +16,17 @@
             <th>Sản phẩm / Đơn hàng</th>
             <th>Đánh giá & Nội dung</th>
             <th>Phản hồi của Admin</th>
+            <th>Ngày đánh giá</th>
             <th>Trạng thái</th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="isLoading">
-            <td colspan="7" class="text-center">Đang tải dữ liệu...</td>
+            <td colspan="8" class="text-center">Đang tải dữ liệu...</td>
           </tr>
           <tr v-else-if="feedbacks.length === 0">
-            <td colspan="7" class="text-center">Chưa có đánh giá nào.</td>
+            <td colspan="8" class="text-center">Chưa có đánh giá nào.</td>
           </tr>
           
           <tr 
@@ -76,6 +77,10 @@
               </div>
             </td>
 
+            <td class="text-sm text-muted">
+              {{ formatDate(feedback.createdAt) }}
+            </td>
+
             <td>
               <span :class="feedback.status === 'HIDDEN' ? 'badge badge-hidden' : 'badge badge-active'">
                 {{ feedback.status === 'HIDDEN' ? 'Đã ẩn' : 'Hiển thị' }}
@@ -105,12 +110,11 @@
       </table>
       
       <div v-if="showLightbox" class="lightbox-overlay" @click.self="closeLightbox">
-      <div class="lightbox-content">
-        <button class="btn-close-lightbox" @click="closeLightbox">&times;</button>
-        <img :src="selectedFullImage" class="img-fluid rounded shadow-lg">
+        <div class="lightbox-content">
+          <button class="btn-close-lightbox" @click="closeLightbox">&times;</button>
+          <img :src="selectedFullImage" class="img-fluid rounded shadow-lg">
+        </div>
       </div>
-
-    </div>
     </div>
   </div>
 </template>
@@ -133,6 +137,13 @@ const getAuthHeaders = () => {
       Authorization: `Bearer ${token}`
     }
   };
+};
+
+// ĐÃ THÊM: Hàm định dạng ngày tháng hiển thị
+const formatDate = (dateString) => {
+  if (!dateString) return '---';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 };
 
 const fetchFeedbacks = async () => {
@@ -230,14 +241,15 @@ onMounted(() => {
 .btn-refresh { padding: 8px 16px; background-color: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; }
 .table-responsive { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .feedback-table { width: 100%; border-collapse: collapse; }
-.feedback-table th, .feedback-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
-.feedback-table th { background-color: #f3f4f6; font-weight: 600; color: #374151; }
+.feedback-table th, .feedback-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
+.feedback-table th { background-color: #f3f4f6; font-weight: 600; color: #374151; white-space: nowrap; }
 
 .low-rating-row { background-color: #fef2f2; }
 .warning-note { font-size: 0.75rem; color: #dc2626; font-weight: bold; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
 .stars { color: #fbbf24; font-size: 1.2rem; display: block; }
 .comment-text { margin: 5px 0; font-style: italic; color: #4b5563; }
-.feedback-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; margin-top: 5px; }
+.text-sm { font-size: 0.875rem; }
+.text-muted { color: #6b7280; }
 
 /* Styles cho phần Reply */
 .reply-cell { min-width: 200px; }
@@ -260,6 +272,7 @@ onMounted(() => {
 .btn-hide { background-color: #f59e0b; color: white; }
 .btn-show { background-color: #10b981; color: white; }
 .btn-delete { background-color: #ef4444; color: white; }
+
 .feedback-img { 
   width: 50px; 
   height: 50px; 
@@ -267,20 +280,19 @@ onMounted(() => {
   border-radius: 4px; 
   border: 1px solid #e5e7eb; 
   margin-top: 5px; 
-  cursor: zoom-in; /* THÊM: Đổi con trỏ chuột */
+  cursor: zoom-in;
   transition: transform 0.2s;
 }
 
 .feedback-img:hover {
-  transform: scale(1.05); /* THÊM: Hiệu ứng phóng to nhẹ khi hover */
+  transform: scale(1.05);
 }
 
-/* THÊM MỚI: CSS cho Lightbox (Tương tự như bên Feedback.vue) */
 .lightbox-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw; /* Đảm bảo phủ kín toàn màn hình */
+  width: 100vw;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.85);
   display: flex;
@@ -305,7 +317,7 @@ onMounted(() => {
   max-height: 80vh; 
   object-fit: contain;
   border: 3px solid white;
-  border-radius: 8px; /* Tùy chọn: bo góc ảnh trong lightbox */
+  border-radius: 8px;
 }
 
 .btn-close-lightbox {
