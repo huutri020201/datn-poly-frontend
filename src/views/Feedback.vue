@@ -48,14 +48,7 @@
           <div class="mb-4">
             <label class="form-label fw-bold d-block">Hình ảnh thực tế (Tải từ máy tính)</label>
             <div class="input-group">
-              <input 
-                type="file" 
-                ref="fileInput" 
-                @change="handleFileUpload" 
-                class="d-none" 
-                accept="image/*"
-                multiple
-              >
+              <input type="file" ref="fileInput" @change="handleFileUpload" class="d-none" accept="image/*" multiple>
               <button @click="triggerUpload" type="button" class="btn btn-outline-success shadow-none">
                 <i class="bi bi-camera me-2"></i>Chọn File ảnh
               </button>
@@ -64,10 +57,7 @@
             <div class="d-flex mt-3 gap-3 flex-wrap">
               <div v-for="(img, idx) in previewImages" :key="idx" class="position-relative">
                 <img :src="img" class="rounded border shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
-                <button @click="removeImage(idx)" 
-                        type="button"
-                        class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle shadow-sm" 
-                        style="transform: translate(40%, -40%); width: 24px; height: 24px; padding: 0;">
+                <button @click="removeImage(idx)" type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle shadow-sm" style="transform: translate(40%, -40%); width: 24px; height: 24px; padding: 0;">
                   <i class="bi bi-x"></i>
                 </button>
               </div>
@@ -97,13 +87,18 @@
           
           <div v-if="myFeedback.imageUrls" class="images d-flex gap-2 my-3 flex-wrap">
             <img v-for="(img, i) in parsedImages(myFeedback.imageUrls)" 
-                 :key="i" 
-                 :src="img" 
-                 class="rounded border shadow-sm" 
+                 :key="i" :src="img" class="rounded border shadow-sm" 
                  style="width: 120px; height: 120px; object-fit: cover;"
                  @error="(e) => e.target.src='https://placehold.co/120x120?text=Loi+Anh'">
           </div>
           
+          <div v-if="myFeedback.adminReply" class="admin-reply mt-3 mb-3 p-3 bg-white border-start border-success border-4 rounded shadow-sm">
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-shop text-success me-2 fs-5"></i>
+              <strong class="text-success">Phản hồi từ Người bán</strong>
+            </div>
+            <p class="mb-0 text-dark">{{ myFeedback.adminReply }}</p>
+          </div>
           <div class="text-muted small">Đã đánh giá vào: {{ formatDate(myFeedback.createdAt) }}</div>
         </div>
 
@@ -124,9 +119,7 @@
             <div>
               <div class="fw-bold text-dark">
                 {{ maskName(rev.userName || rev.userId) }} 
-                <span class="text-muted fw-normal small ms-1">
-                  {{ maskPhone(rev.phoneNumber) }}
-                </span>
+                <span class="text-muted fw-normal small ms-1">{{ maskPhone(rev.phoneNumber) }}</span>
               </div>
               
               <div class="text-warning small d-flex align-items-center">
@@ -142,20 +135,24 @@
           
           <div v-if="rev.imageUrls" class="ps-5 ms-2 mt-2 d-flex gap-2 flex-wrap">
             <img v-for="(img, i) in parsedImages(rev.imageUrls)" 
-                :key="i" 
-                :src="img" 
-                @click="openLightbox(img)"
-                class="rounded border" 
+                :key="i" :src="img" @click="openLightbox(img)" class="rounded border" 
                 style="width: 60px; height: 60px; object-fit: cover; cursor: zoom-in;">
-                <!-- Lightbox Modal -->
-                <div v-if="showLightbox" class="lightbox-overlay" @click.self="closeLightbox">
-                <div class="lightbox-content">
-                    <button class="btn-close-lightbox" @click="closeLightbox">&times;</button>
-                    <img :src="selectedFullImage" class="img-fluid rounded shadow-lg">
-                </div>
-                </div>
+                
+            <div v-if="showLightbox" class="lightbox-overlay" @click.self="closeLightbox">
+              <div class="lightbox-content">
+                  <button class="btn-close-lightbox" @click="closeLightbox">&times;</button>
+                  <img :src="selectedFullImage" class="img-fluid rounded shadow-lg">
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div v-if="rev.adminReply" class="admin-reply mt-3 ms-5 ms-sm-5 p-3 bg-light border-start border-secondary border-4 rounded">
+            <div class="d-flex align-items-center mb-1">
+              <strong class="text-secondary">Phản hồi từ Người bán</strong>
+            </div>
+            <p class="mb-0 text-dark small">{{ rev.adminReply }}</p>
+          </div>
+          </div>
       </div>
     </div>
   </div>
@@ -231,7 +228,9 @@ export default {
         ]);
 
         if (prodRes.data) {
-          this.productFeedbacks = prodRes.data.slice(0, 5);
+          this.productFeedbacks = prodRes.data
+              .filter(f => f.status !== 'HIDDEN') 
+              .slice(0, 5);
         }
 
         if (myRes.data && Array.isArray(myRes.data)) {

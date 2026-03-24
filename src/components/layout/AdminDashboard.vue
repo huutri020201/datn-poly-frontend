@@ -22,6 +22,9 @@
         </router-link>
         <router-link to="/admin/promotions" class="nav-item">
           Promotions
+
+        <router-link to="/admin/feedback" class="nav-item">
+          Feedbacks
         </router-link>
       </nav>
     </header>
