@@ -49,14 +49,20 @@ const routes = [
     component: () => import("@/views/Profile.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/booking",
+    name: "booking",
+    component: () => import("@/views/BookingList.vue"),
+    meta: { requiresAuth: true },
+  },
 {
   path: '/checkout',
   name: 'Checkout',
   component: () => import('@/views/Checkout.vue'),
-  meta: { requiresAuth: true } // Đảm bảo phải login mới vào được checkout
+  meta: { requiresAuth: true } 
 },
 {
-  path: '/payment/callback', // Phải khớp với vnp_ReturnUrl trong application.yml (phần path)
+  path: '/payment/callback', 
   name: 'PaymentCallback',
   component: () => import('@/views/PaymentCallback.vue')
 },
