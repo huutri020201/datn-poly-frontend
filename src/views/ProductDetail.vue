@@ -1,117 +1,134 @@
 <template>
-
   <div v-if="!product" class="text-center mt-5">
-    Loading...
+    <div class="spinner-border text-secondary" role="status"></div>
+    <p class="mt-2 text-muted">Loading...</p>
   </div>
 
-  <div class="container mt-4" v-else>
-
+  <div class="container-fluid mt-4 px-4" v-else>
     <div class="row">
 
-      <!-- IMAGE -->
-      <div class="col-md-5">
-
+      <div class="col-lg-4 col-md-4 mb-4">
         <img
           :src="selectedImage"
-          class="img-fluid product-image"
+          class="img-fluid product-image shadow-sm w-100"
+          style="object-fit: cover; border-radius: 8px;"
         >
-
       </div>
 
 
-      <!-- INFO -->
-      <div class="col-md-7">
+      <div class="col-lg-4 col-md-4 px-lg-4 mb-4">
+        <h3 class="fw-bold">{{ product.name }}</h3>
 
-        <h4>{{ product.name }}</h4>
-
-        <h5 class="text-danger">
+        <h4 class="text-danger mt-3 mb-4">
           {{ formatPrice(selectedPrice) }}
-        </h5>
+        </h4>
 
         <p class="text-muted">
           {{ product.description }}
         </p>
 
-        <!-- COLOR -->
         <div class="mt-4">
-
-          <h6>Color</h6>
-
+          <h6 class="fw-bold">Color</h6>
           <button
             v-for="c in colors"
             :key="c"
-            class="btn btn-outline-dark btn-sm me-2"
+            class="btn btn-outline-dark btn-sm me-2 mb-2"
             :class="{active:selectedColor===c}"
             @click="selectColor(c)"
           >
             {{ c }}
           </button>
-
         </div>
 
-
-        <!-- SIZE -->
         <div class="mt-3">
-
-          <h6>Size</h6>
-
+          <h6 class="fw-bold">Size</h6>
           <button
             v-for="s in sizes"
             :key="s"
-            class="btn btn-outline-secondary btn-sm me-2"
+            class="btn btn-outline-secondary btn-sm me-2 mb-2"
             :class="{active:selectedSize===s}"
             @click="selectSize(s)"
           >
             {{ s }}
           </button>
-
         </div>
 
-
-        <!-- STOCK -->
         <div class="mt-3">
-
           <small class="text-muted">
             Stock: {{ selectedVariant?.stockQty || 0 }}
           </small>
-
         </div>
 
-
-        <!-- ADD CART -->
         <button
-          class="btn btn-dark mt-4"
+          class="btn btn-dark mt-4 px-4 py-2"
           :disabled="!selectedVariant"
           @click="addToCart"
         >
           Thêm vào giỏ hàng
         </button>
+      </div>
 
+
+      <div class="col-lg-4 col-md-4 border-start">
+        <h5 class="fw-bold border-bottom pb-2 mb-3">Đánh giá sản phẩm ({{ feedbacks.length }})</h5>
+
+        <div class="feedback-scrollable pe-2">
+          
+          <div v-if="feedbacks.length === 0" class="text-center text-muted mt-5 fst-italic">
+            Chưa có đánh giá nào.
+          </div>
+
+          <div v-else class="feedback-list">
+            <div v-for="fb in feedbacks" :key="fb.id" class="feedback-item mb-3 pb-3 border-bottom">
+              
+              <div class="d-flex align-items-center mb-2">
+                <div class="avatar-circle bg-dark text-white me-2 d-flex justify-content-center align-items-center shadow-sm">
+                  {{ fb.userName ? fb.userName.charAt(0).toUpperCase() : 'U' }}
+                </div>
+                <div>
+                  <div class="fw-bold" style="font-size: 0.95rem;">{{ fb.userName || 'Khách hàng ẩn danh' }}</div>
+                  <div class="text-warning" style="font-size: 0.8rem;">
+                    <i v-for="s in 5" :key="s" class="bi" :class="s <= fb.rating ? 'bi-star-fill' : 'bi-star'"></i>
+                    <span class="text-muted ms-2">{{ formatDate(fb.createdAt) }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <p class="mb-2 text-dark" style="font-size: 0.95rem;">{{ fb.comment }}</p>
+
+              <div v-if="fb.imageUrls" class="d-flex gap-2 flex-wrap mb-2">
+                <img v-for="(img, idx) in fb.imageUrls.split(',')" :key="idx" :src="img.trim()" class="feedback-img rounded border" />
+              </div>
+
+              <div v-if="fb.adminReply" class="admin-reply bg-light p-2 mt-2 rounded border-start border-4 border-secondary">
+                <div class="fw-bold mb-1" style="font-size: 0.85rem;"><i class="bi bi-shop me-1"></i>Phản hồi:</div>
+                <div class="text-muted" style="font-size: 0.85rem;">{{ fb.adminReply }}</div>
+              </div>
+
+            </div>
+          </div>
+          
+        </div>
       </div>
 
     </div>
-
   </div>
-
 </template>
 
-
 <script setup>
-
 import { ref, computed, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router" 
 import { cartCount } from '@/cartState';
 import axios from "axios"
 
-
 const route = useRoute()
 const router = useRouter()
 
 const product = ref(null)
+const feedbacks = ref([]) 
 
 const selectedColor = ref(null)
 const selectedSize = ref(null)
-
 const selectedVariant = ref(null)
 
 const fetchProduct = async () => {
@@ -127,15 +144,35 @@ const fetchProduct = async () => {
         selectedSize.value = defaultVariant.attributes?.size;
       }
     }
-
   } catch(err) {
     console.error("Load product error:", err)
   }
 }
 
-onMounted(fetchProduct)
+const fetchFeedbacks = async () => {
+  try {
+    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+    const config = token ? {
+      headers: { Authorization: `Bearer ${token}` }
+    } : {};
+    const res = await axios.get(`http://localhost:8080/feedbacks/product/${route.params.id}`, config);
+    
+    const responseData = res.data.result || res.data;
+    
+    if (Array.isArray(responseData)) {
+      feedbacks.value = responseData.filter(f => f.status !== 'HIDDEN');
+    } else {
+      feedbacks.value = [];
+    }
+  } catch(err) {
+    console.error("Load feedbacks error:", err);
+  }
+}
 
-
+onMounted(() => {
+  fetchProduct()
+  fetchFeedbacks() 
+})
 
 const colors = computed(() => {
   if(!product.value) return []
@@ -147,7 +184,6 @@ const colors = computed(() => {
   )]
 })
 
-
 const sizes = computed(() => {
   if(!product.value) return []
   return [...new Set(
@@ -158,25 +194,18 @@ const sizes = computed(() => {
   )]
 })
 
-
 const selectColor = (color)=>{
-
   selectedColor.value = color
   findVariant()
-
 }
 
 const selectSize = (size)=>{
-
   selectedSize.value = size
   findVariant()
-
 }
-
 
 const findVariant = ()=>{
   if(!product.value) return
-
   selectedVariant.value = product.value.variants.find(v => 
     v.active && 
     v.attributes?.color === selectedColor.value && 
@@ -184,39 +213,26 @@ const findVariant = ()=>{
   )
 }
 
-
 const selectedImage = computed(()=>{
-
-  if(selectedVariant.value?.imageUrl)
-    return selectedVariant.value.imageUrl
-
-  if(product.value?.variants?.length)
-    return product.value.variants[0].imageUrl
-
+  if(selectedVariant.value?.imageUrl) return selectedVariant.value.imageUrl
+  if(product.value?.variants?.length) return product.value.variants[0].imageUrl
   return "https://via.placeholder.com/500"
-
 })
-
 
 const selectedPrice = computed(()=>{
-
-  if(selectedVariant.value?.priceOverride)
-    return selectedVariant.value.priceOverride
-
+  if(selectedVariant.value?.priceOverride) return selectedVariant.value.priceOverride
   return product.value.basePrice
-
 })
 
-
 const formatPrice = (price)=>{
-
-  return new Intl.NumberFormat('vi-VN',{
-    style:'currency',
-    currency:'VND'
-  }).format(price)
-
+  return new Intl.NumberFormat('vi-VN',{ style:'currency', currency:'VND' }).format(price)
 }
 
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  return d.toLocaleDateString('vi-VN');
+}
 
 const addToCart = async () => {
   if (!selectedVariant.value) {
@@ -233,14 +249,12 @@ const addToCart = async () => {
 
   try {
     await axios.post('http://localhost:8080/cart/add', {
-      productId: product.value.id,         
+      productId: product.value.id,        
       variantId: selectedVariant.value.id, 
-      quantity: 1,                         
-      unitPrice: selectedPrice.value       
+      quantity: 1,                        
+      unitPrice: selectedPrice.value      
     }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     cartCount.value += 1;
@@ -251,12 +265,10 @@ const addToCart = async () => {
     alert("Không thể thêm vào giỏ hàng. Vui lòng thử lại!");
   }
 }
-
 </script>
 
-
 <style scoped>
-
+/* Thuộc tính cơ bản từ code cũ của bạn */
 .product-image{
   border-radius:8px;
   border:1px solid #eee;
@@ -267,4 +279,35 @@ button.active{
   color:white;
 }
 
+/* Các css phụ trợ cho khu vực Feedback bên phải */
+.feedback-scrollable {
+  max-height: 550px; 
+  overflow-y: auto;
+}
+
+.feedback-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.feedback-scrollable::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 4px;
+}
+
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.feedback-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}
+
+.admin-reply {
+  font-size: 0.9rem;
+}
 </style>
