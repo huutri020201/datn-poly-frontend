@@ -258,15 +258,22 @@ const getRPImage = (rp) => {
 
 const fetchFeedbacks = async () => {
   try {
-    const res = await axios.get(
-      `http://localhost:8080/feedbacks/product/${route.params.id}`
-    );
-    const responseData = res.data.result || res.data;
-    feedbacks.value = Array.isArray(responseData)
-      ? responseData.filter((f) => f.status !== "HIDDEN")
-      : [];
+    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+    const res = await axios.get(`http://localhost:8080/feedbacks/product/${route.params.id}`, {
+      headers: { 
+        Authorization: `Bearer ${token}` 
+      }
+    });
+
+    console.log("Dữ liệu feedback:", res.data);
+    const data = res.data.result !== undefined ? res.data.result : res.data;   
+    feedbacks.value = Array.isArray(data) ? data.filter(f => f.status !== 'HIDDEN') : [];
   } catch (err) {
-    console.error("Load feedbacks error:", err);
+    console.error("Lỗi tải feedback:", err);
+    if (err.response && err.response.status === 401) {
+       console.warn("Bạn cần đăng nhập để xem đánh giá hoặc Token hết hạn.");
+    }
   }
 };
 

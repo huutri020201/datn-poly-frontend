@@ -234,7 +234,8 @@ export default {
 
         if (myRes.data && Array.isArray(myRes.data)) {
           const existing = myRes.data.find(f => 
-            f.orderId && String(f.orderId).toLowerCase() === String(oId).toLowerCase()
+            f.orderId && String(f.orderId).toLowerCase() === String(oId).toLowerCase() &&
+            f.productId && String(f.productId) === String(pId) 
           );
           
           if (existing) {
