@@ -1,58 +1,45 @@
-import api from "@/api/axios";
+import api from "./axiosClient";
 
-// REGISTER
-export const registerByEmail = (data) =>{
-  const requestBody = {
-    email: data.email,
-    password: data.password,
-    confirmPassword: data.confirmPassword
-  };
-    return api.post("/auth/register-email", requestBody);
+const authApi = {
+  // --- HỆ THỐNG ---
+  login(data) {
+    return api.post("/auth/login", data);
+  },
+
+  logout(token) {
+    return api.post("/auth/logout", { token });
+  },
+
+  refresh(refreshToken) {
+    return api.post("/auth/refresh-token", { refreshToken });
+  },
+
+  register(data) {
+    return api.post("/auth/register", data);
+  },
+
+  // --- XÁC THỰC CHUNG (Dùng cho cả Register & Forgot Password) ---
+  verify(data) {
+    return api.post("/auth/verify", data);
+  },
+
+  resend(data) {
+    return api.post("/auth/resend", data);
+  },
+
+  findAccount(identifier) {
+    return api.post("/auth/forgot-password/find-account", {
+      identifier: identifier,
+    });
+  },
+
+  sendOtpForReset(data) {
+    return api.post("/auth/forgot-password/send-otp", data);
+  },
+
+  resetPassword(data) {
+    return api.post("/auth/forgot-password/reset", data);
+  },
 };
 
-
-export const verifyEmail = (token) =>
-  api.get(`/auth/verify-email/${token}`);
-;
-export const registerByPhone = (data) =>{
-  const requestBody = {
-    phone: data.phone,
-    password: data.password,
-    confirmPassword: data.confirmPassword
-  };
-  return api.post("/auth/register-phone", requestBody);
-};
-export const verifyPhone = (data) =>
-  api.post("/auth/verify-phone", data);
-
-export const resendOtp = (data) =>
-  api.post("/auth/resend-otp", data);
-
-// LOGIN
-export const login = (data) => {
-  const requestBody = {
-    loginIdentifier: data.username,
-    password: data.password,
-  };
-
-  return api.post("/auth/login", requestBody);
-};
-
-export const refreshToken = (data) =>
-  api.post("/auth/refresh-token", data);
-
-export const logout = (data) =>
-  api.post("/auth/logout", data);
-
-// RESET PASSWORD
-export const findAccount = (data) =>
-  api.post("/auth/find-account", data);
-
-export const sendOtpReset = (data) =>
-  api.post("/auth/send-otp-reset", data);
-
-export const verifyOtpReset = (data) =>
-  api.post("/auth/verify-otp-reset", data);
-
-export const resetPassword = (data) =>
-  api.post("/auth/reset-password", data);
+export default authApi;

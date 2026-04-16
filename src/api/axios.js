@@ -7,7 +7,9 @@ const api = axios.create({
 
 // Gắn access token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+  const token =
+    localStorage.getItem("accessToken") ||
+    sessionStorage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -20,30 +22,25 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem("refreshToken");
 
-      const res = await axios.post(
-        "http://localhost:8080/auth/refresh-token",
-        { refreshToken }
-      );
+      const res = await axios.post("http://localhost:8080/auth/refresh-token", {
+        refreshToken,
+      });
 
       const newAccessToken = res.data.result.accessToken;
       localStorage.setItem("accessToken", newAccessToken);
 
-      originalRequest.headers.Authorization =
-        `Bearer ${newAccessToken}`;
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
       return api(originalRequest);
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // api.interceptors.request.use((config) => {

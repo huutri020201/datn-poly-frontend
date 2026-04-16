@@ -1,21 +1,39 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
+  //router auth
   {
     path: "/",
     name: "home",
     component: () => import("@/views/Home.vue"),
   },
   {
-    path: "/login",
-    name: "login",
-    component: () => import("@/views/LoginView.vue"),
-  },
-  {
     path: "/register",
     name: "register",
-    component: () => import("@/views/RegisterView.vue"),
+    component: () => import("@/views/auth/Register.vue"),
   },
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("@/views/auth/Login.vue"),
+  },
+  {
+    path: "/forgot-password",
+    name: "ForgotPassword",
+    component: () => import("@/views/auth/ForgotPassword.vue"),
+  },
+  {
+    path: "/verify",
+    name: "verify",
+    component: () => import("@/views/auth/VerifyView.vue"),
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    component: () => import("@/views/auth/Profile.vue"),
+    meta: { requiresAuth: true },
+  },
+
   {
     path: "/products",
     name: "products",
@@ -34,19 +52,13 @@ const routes = [
   {
     path: "/orders",
     name: "orders-list",
-    component: () => import("@/views/MyOrdersList.vue"), 
+    component: () => import("@/views/MyOrdersList.vue"),
     meta: { requiresAuth: true },
-  },  
+  },
   {
     path: "/orders/:id",
     name: "order-detail",
     component: () => import("@/views/Orders.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/profile",
-    name: "profile",
-    component: () => import("@/views/Profile.vue"),
     meta: { requiresAuth: true },
   },
   {
@@ -56,35 +68,21 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/checkout',
-    name: 'Checkout',
-    component: () => import('@/views/Checkout.vue'),
-    meta: { requiresAuth: true } 
+    path: "/checkout",
+    name: "Checkout",
+    component: () => import("@/views/Checkout.vue"),
+    meta: { requiresAuth: true },
   },
   {
-    path: '/payment/callback', 
-    name: 'PaymentCallback',
-    component: () => import('@/views/PaymentCallback.vue')
+    path: "/payment/callback",
+    name: "PaymentCallback",
+    component: () => import("@/views/PaymentCallback.vue"),
   },
+
   {
-    path: '/forgot-password',
-    name: 'ForgotPassword',
-    component: () => import('@/views/ForgotPW.vue')
-  },
-  {
-    path: '/verify-email',
-    name: 'VerifyEmail',
-    component: () => import('@/views/VerifyEmail.vue')
-  },
-  {
-    path: '/profile-update',
-    name: 'ProfileUpdate',
-    component: () => import('@/views/ProfileUpdate.vue')
-  },
-  {
-    path: '/bookings/:id',
-    name: 'booking-detail',
-    component: () => import('@/views/BookingDetail.vue')
+    path: "/bookings/:id",
+    name: "booking-detail",
+    component: () => import("@/views/BookingDetail.vue"),
   },
   {
     path: "/feedback",
@@ -95,6 +93,16 @@ const routes = [
     path: "/my-bookings",
     name: "mybookings",
     component: () => import("@/views/MyBookingList.vue"),
+  },
+  {
+    path: "/info",
+    name: "info",
+    component: () => import("@/views/auth/Login.vue"),
+  },
+  {
+    path: "/contact",
+    name: "contact",
+    component: () => import("@/views/auth/Login.vue"),
   },
   {
     path: "/admin",
@@ -131,8 +139,8 @@ const routes = [
         path: "promotions",
         name: "admin-promotions",
         component: () => import("@/views/admin/PromotionManagement.vue"),
-      }, 
-      {  
+      },
+      {
         path: "feedback",
         name: "admin-feedback",
         component: () => import("@/views/admin/FeedbackManagement.vue"),
@@ -149,28 +157,42 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to, from, next) => {
+// router.beforeEach((to, from) => {
+//   const token =
+//     localStorage.getItem("accessToken") ||
+//     sessionStorage.getItem("accessToken");
+
+//   if (to.path === "/login" && token) {
+//     return { path: "/" };
+//   }
+
+//   if (to.meta.requiresAuth && !token) {
+//     return { path: "/login" };
+//   }
+
+//   return true;
+// });
+
+router.beforeEach((to, from) => {
   const token =
     localStorage.getItem("accessToken") ||
     sessionStorage.getItem("accessToken");
-
-  const role =
-    localStorage.getItem("role") ||
-    sessionStorage.getItem("role");
-
-  if (to.meta.requiresAuth && !token) {
-    return next("/login");
-  }
-
-  if (to.meta.requiresAdmin && role !== "ROLE_ADMIN") {
-    return next("/");
-  }
-
+  const userRole =
+    localStorage.getItem("role") || sessionStorage.getItem("role");
   if (to.path === "/login" && token) {
-    return next("/");
+    return { path: "/" };
+  }
+  if (to.meta.requiresAuth && !token) {
+    return { path: "/login", query: { redirect: to.fullPath } };
+  }
+  if (to.matched.some((record) => record.meta.requiresAdmin)) {
+    if (!userRole || !userRole.includes("ROLE_ADMIN")) {
+      alert("Bạn không có quyền truy cập!");
+      return { path: "/" };
+    }
   }
 
-  next();
+  return true;
 });
 
 export default router;

@@ -6,7 +6,9 @@ const instance = axios.create({
 
 // 1. Request Interceptor: Luôn lấy token mới nhất từ bộ nhớ
 instance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+  const token =
+    localStorage.getItem("accessToken") ||
+    sessionStorage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -24,14 +26,19 @@ instance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
+        const refreshToken =
+          localStorage.getItem("refreshToken") ||
+          sessionStorage.getItem("refreshToken");
 
         if (!refreshToken) throw new Error("No refresh token");
 
         // Gọi API refresh token (Sử dụng axios gốc để tránh lặp vô tận)
-        const res = await axios.post("http://localhost:8080/identity/refresh-token", {
-          refreshToken: refreshToken,
-        });
+        const res = await axios.post(
+          "http://localhost:8080/identity/refresh-token",
+          {
+            refreshToken: refreshToken,
+          },
+        );
 
         const { accessToken, refreshToken: newRefreshToken } = res.data.result;
 
@@ -54,7 +61,7 @@ instance.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default instance;

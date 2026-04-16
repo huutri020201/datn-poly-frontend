@@ -15,7 +15,7 @@
         <swiper
           :modules="swiperModules"
           :slides-per-view="3"
-          :space-between="20" 
+          :space-between="20"
           :navigation="{ prevEl: '.acc-prev', nextEl: '.acc-next' }"
           :breakpoints="swiperBreakpoints"
           class="product-swiper"

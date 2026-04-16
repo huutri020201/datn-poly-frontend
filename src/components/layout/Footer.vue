@@ -24,16 +24,24 @@
           <h5 class="fw-bold mb-3">Lối tắt</h5>
           <ul class="list-unstyled">
             <li class="mb-2">
-              <router-link to="/booking" class="text-decoration-none text-dark">Đặt sân</router-link>
+              <router-link to="/booking" class="text-decoration-none text-dark"
+                >Đặt sân</router-link
+              >
             </li>
             <li class="mb-2">
-              <router-link to="/products" class="text-decoration-none text-dark">Phụ kiện</router-link>
+              <router-link to="/products" class="text-decoration-none text-dark"
+                >Phụ kiện</router-link
+              >
             </li>
             <li class="mb-2">
-              <router-link to="/info" class="text-decoration-none text-dark">Giới thiệu</router-link>
+              <router-link to="/info" class="text-decoration-none text-dark"
+                >Giới thiệu</router-link
+              >
             </li>
             <li class="mb-2">
-              <router-link to="/contact" class="text-decoration-none text-dark">Liên hệ</router-link>
+              <router-link to="/contact" class="text-decoration-none text-dark"
+                >Liên hệ</router-link
+              >
             </li>
           </ul>
         </div>
@@ -74,6 +82,10 @@
   </footer>
 </template>
 
+<script setup>
+import { ref } from "vue";
+const hasLogo = ref(true);
+</script>
 <style scoped>
 .footer-container {
   background-color: #d1f2d5;
