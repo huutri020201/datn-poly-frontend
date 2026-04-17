@@ -1,10 +1,9 @@
 <template>
   <div class="home-page bg-light min-h-screen pb-5">
-    <div class="container mt-5">
+    <div class="container">
       <h4
-        class="fw-bold text-uppercase border-start border-4 border-primary ps-3 mb-4"
-      >
-        Phụ kiện thể thao
+        class="fw-bold text-uppercase border-4 border-black pt-4"
+      >Phụ kiện thể thao
       </h4>
 
       <div v-if="loading" class="text-center py-5">
@@ -14,7 +13,7 @@
       <div v-else>
         <swiper
           :modules="swiperModules"
-          :slides-per-view="3"
+          :slides-per-view="4"
           :space-between="20"
           :navigation="{ prevEl: '.acc-prev', nextEl: '.acc-next' }"
           :breakpoints="swiperBreakpoints"
@@ -62,7 +61,7 @@
 
     <div class="container">
       <h4
-        class="fw-bold text-uppercase border-start border-4 border-warning ps-3 mb-4"
+        class="fw-bold text-uppercase border-4 border-warning mb-4"
       >
         Danh sách Sân bóng
       </h4>

@@ -26,8 +26,13 @@ export const getProductDetail = (id) => {
   return axios.get(`${API_PRODUCTS}/${id}`, { headers: authHeader() });
 };
 
-export const createProduct = (data) => {
-  return axios.post(API_PRODUCTS, data, { headers: authHeader() });
+export const createProduct = (formData) => {
+  return axios.post(API_PRODUCTS, formData, {
+    headers: {
+      ...authHeader(),
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
 
 export const updateProduct = (id, data) => {

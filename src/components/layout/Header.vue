@@ -59,7 +59,7 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <header class="header-container py-3 px-4 shadow-sm mb-5">
+  <header class="header-container py-3 px-4 shadow-sm">
     <div
       class="container-fluid d-flex justify-content-between align-items-center"
     >

@@ -183,7 +183,7 @@ export default {
     };
   },
   async created() {
-    const userJson = localStorage.getItem('user'); 
+    const userJson = sessionStorage.getItem('user'); 
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);

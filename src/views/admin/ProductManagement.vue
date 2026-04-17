@@ -149,7 +149,7 @@
                         />
                       </div>
                       <div class="col-6">
-                        <label class="extra-small fw-bold">Kho</label>
+                        <label class="extra-small fw-bold">Số Lượng</label>
                         <input
                           v-model="v.stockQty"
                           type="number"
@@ -179,11 +179,21 @@
                         />
                       </div>
                       <div class="col-6">
-                        <label class="extra-small fw-bold">URL Ảnh</label>
-                        <input
-                          v-model="v.imageUrl"
-                          class="form-control form-control-sm"
-                        />
+                        <label class="extra-small fw-bold">Chọn ảnh mẫu</label>
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            type="file"
+                            class="form-control form-control-sm"
+                            accept="image/*"
+                            @change="onFileSelected($event, index)"
+                          />
+                          <img
+                            v-if="v.previewUrl || v.imageUrl"
+                            :src="v.previewUrl || v.imageUrl"
+                            class="rounded border"
+                            style="width: 60px; height: 60px; object-fit: cover"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -194,8 +204,16 @@
             <div
               class="mt-4 border-top pt-4 d-flex justify-content-center gap-3"
             >
-              <button type="submit" class="btn btn-dark btn-lg px-5 shadow-sm">
-                <i class="bi bi-save me-2"></i>
+              <button
+                type="submit"
+                class="btn btn-dark btn-lg px-5 shadow-sm"
+                :disabled="loading"
+              >
+                <span
+                  v-if="loading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
+                <i v-else class="bi bi-save me-2"></i>
                 {{ isEditing ? "CẬP NHẬT THAY ĐỔI" : "LƯU SẢN PHẨM" }}
               </button>
               <button
@@ -248,13 +266,16 @@
                   <td class="text-start">
                     <div class="fw-bold">{{ p.name }}</div>
                   </td>
+                  <td>
+                    <div
+                      class="extra-small text-muted text-truncate"
+                      style="max-width: 200px"
+                    >
+                      {{ p.description }}
+                    </div>
+                  </td>
                   <td class="text-center text-danger fw-bold">
                     {{ formatCurrency(p.basePrice) }}
-                  </td>
-                  <td>
-                    <div class="extra-small text-muted">
-                      {{ p.description?.substring(0, 50) }}...
-                    </div>
                   </td>
                   <td class="text-center">
                     <span class="badge bg-info text-dark">{{
@@ -280,13 +301,13 @@
                         @click="editProduct(p)"
                         class="btn btn-primary btn-sm px-3"
                       >
-                        ✏️
+                        Sửa
                       </button>
                       <button
                         @click="removeProduct(p.id)"
                         class="btn btn-danger btn-sm px-3"
                       >
-                        🗑️
+                        Xóa
                       </button>
                     </div>
                   </td>
@@ -297,137 +318,139 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div v-if="variantModal" class="custom-modal-backdrop">
-    <div class="modal-box-large bg-white rounded shadow p-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="m-0 fw-bold">Chi tiết các phiên bản</h5>
-        <button class="btn-close" @click="variantModal = false"></button>
-      </div>
-      <table class="table table-bordered text-center small">
-        <thead class="table-light">
-          <tr>
-            <th>Hình ảnh</th>
-            <th>SKU</th>
-            <th>Kho</th>
-            <th>Giá bán</th>
-            <th>Thuộc tính</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="v in selectedVariants" :key="v.sku">
-            <td>
-              <img
-                :src="v.imageUrl || 'https://via.placeholder.com/40'"
-                class="rounded"
-                width="40"
-                height="40"
-                style="object-fit: cover"
-              />
-            </td>
-            <td class="fw-bold">{{ v.sku }}</td>
-            <td>{{ v.stockQty }}</td>
-            <td class="text-danger fw-bold">
-              {{ formatCurrency(v.priceOverride || 0) }}
-            </td>
-            <td>
-              <span class="badge bg-light text-dark border me-1"
-                >Màu: {{ v.attributes?.color }}</span
-              >
-              <span class="badge bg-light text-dark border"
-                >Size: {{ v.attributes?.size }}</span
-              >
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
-  <div v-if="brandModal" class="custom-modal-backdrop">
-    <div class="modal-box-small bg-white rounded shadow p-3">
-      <h6 class="fw-bold mb-3 border-bottom pb-2">Quản lý Thương hiệu</h6>
-      <div class="input-group input-group-sm mb-3">
-        <input
-          v-model="brandForm.name"
-          class="form-control"
-          placeholder="Tên thương hiệu..."
-        />
-        <button class="btn btn-primary" @click="submitBrand">
-          {{ brandForm.id ? "Sửa" : "Thêm" }}
-        </button>
-      </div>
-      <div class="list-wrapper border rounded mb-3">
-        <table class="table table-sm table-hover m-0 small text-center">
+
+
+    <div v-if="variantModal" class="custom-modal-backdrop">
+      <div class="modal-box-large bg-white rounded shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0 fw-bold">Chi tiết các phiên bản</h5>
+          <button class="btn-close" @click="variantModal = false"></button>
+        </div>
+        <table class="table table-bordered text-center small">
+          <thead class="table-light">
+            <tr>
+              <th>Hình ảnh</th>
+              <th>SKU</th>
+              <th>Kho</th>
+              <th>Giá bán</th>
+              <th>Thuộc tính</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr v-for="b in brands" :key="b.id">
-              <td>{{ b.name }}</td>
-              <td class="text-end pe-2">
-                <span
-                  class="me-2 cursor-pointer text-primary"
-                  @click="editBrand(b)"
-                  >✏️</span
-                >
-                <span
-                  class="cursor-pointer text-danger"
-                  @click="deleteBrandAction(b.id)"
-                  >🗑️</span
+            <tr v-for="v in selectedVariants" :key="v.sku">
+              <td>
+                <img
+                  :src="v.imageUrl"
+                  class="rounded"
+                  width="70"
+                  height="70"
+                  style="object-fit: cover"
+                />
+              </td>
+              <td class="fw-bold">{{ v.sku }}</td>
+              <td>{{ v.stockQty }}</td>
+              <td class="text-danger fw-bold">
+                {{ formatCurrency(v.priceOverride || 0) }}
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border me-1"
+                  >Màu: {{ v.attributes?.color }}</span
+                ><span class="badge bg-light text-dark border"
+                  >Size: {{ v.attributes?.size }}</span
                 >
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <button
-        class="btn btn-secondary btn-sm w-100"
-        @click="brandModal = false"
-      >
-        Đóng
-      </button>
     </div>
-  </div>
 
-  <div v-if="categoryModal" class="custom-modal-backdrop">
-    <div class="modal-box-small bg-white rounded shadow p-3">
-      <h6 class="fw-bold mb-3 border-bottom pb-2">Quản lý Danh mục</h6>
-      <div class="input-group input-group-sm mb-3">
-        <input
-          v-model="categoryForm.name"
-          class="form-control"
-          placeholder="Tên danh mục..."
-        />
-        <button class="btn btn-success" @click="submitCategory">
-          {{ categoryForm.id ? "Sửa" : "Thêm" }}
+    <div v-if="brandModal" class="custom-modal-backdrop">
+      <div class="modal-box-small bg-white rounded shadow p-3">
+        <h6 class="fw-bold mb-3 border-bottom pb-2">Quản lý Thương hiệu</h6>
+        <div class="input-group input-group-sm mb-3">
+          <input
+            v-model="brandForm.name"
+            class="form-control"
+            placeholder="Tên thương hiệu..."
+          />
+          <button class="btn btn-primary" @click="submitBrand">
+            {{ brandForm.id ? "Sửa" : "Thêm" }}
+          </button>
+        </div>
+        <div class="list-wrapper border rounded mb-3">
+          <table class="table table-sm table-hover m-0 small text-center">
+            <tbody>
+              <tr v-for="b in brands" :key="b.id">
+                <td>{{ b.name }}</td>
+                <td class="text-end pe-2">
+                  <span
+                    class="me-2 cursor-pointer text-primary"
+                    @click="editBrand(b)"
+                    >Sửa</span
+                  >
+                  <span
+                    class="cursor-pointer text-danger"
+                    @click="deleteBrandAction(b.id)"
+                    >Xóa</span
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button
+          class="btn btn-secondary btn-sm w-100"
+          @click="brandModal = false"
+        >
+          Đóng
         </button>
       </div>
-      <div class="list-wrapper border rounded mb-3">
-        <table class="table table-sm table-hover m-0 small text-center">
-          <tbody>
-            <tr v-for="c in categories" :key="c.id">
-              <td>{{ c.name }}</td>
-              <td class="text-end pe-2">
-                <span
-                  class="me-2 cursor-pointer text-primary"
-                  @click="editCategory(c)"
-                  >✏️</span
-                >
-                <span
-                  class="cursor-pointer text-danger"
-                  @click="deleteCategoryAction(c.id)"
-                  >🗑️</span
-                >
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    </div>
+
+    <div v-if="categoryModal" class="custom-modal-backdrop">
+      <div class="modal-box-small bg-white rounded shadow p-3">
+        <h6 class="fw-bold mb-3 border-bottom pb-2">Quản lý Danh mục</h6>
+        <div class="input-group input-group-sm mb-3">
+          <input
+            v-model="categoryForm.name"
+            class="form-control"
+            placeholder="Tên danh mục..."
+          />
+          <button class="btn btn-success" @click="submitCategory">
+            {{ categoryForm.id ? "Sửa" : "Thêm" }}
+          </button>
+        </div>
+        <div class="list-wrapper border rounded mb-3">
+          <table class="table table-sm table-hover m-0 small text-center">
+            <tbody>
+              <tr v-for="c in categories" :key="c.id">
+                <td>{{ c.name }}</td>
+                <td class="text-end pe-2">
+                  <span
+                    class="me-2 cursor-pointer text-primary"
+                    @click="editCategory(c)"
+                    >Sửa</span
+                  >
+                  <span
+                    class="cursor-pointer text-danger"
+                    @click="deleteCategoryAction(c.id)"
+                    >Xóa</span
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button
+          class="btn btn-secondary btn-sm w-100"
+          @click="categoryModal = false"
+        >
+          Đóng
+        </button>
       </div>
-      <button
-        class="btn btn-secondary btn-sm w-100"
-        @click="categoryModal = false"
-      >
-        Đóng
-      </button>
     </div>
   </div>
 </template>
@@ -473,6 +496,14 @@ const form = ref({
 const brandForm = ref({ id: null, name: "" });
 const categoryForm = ref({ id: null, name: "" });
 
+const onFileSelected = (event, index) => {
+  const file = event.target.files[0];
+  if (file) {
+    form.value.variants[index].fileRaw = file;
+    form.value.variants[index].previewUrl = URL.createObjectURL(file);
+  }
+};
+
 const handleBrandChange = (e) => {
   if (e.target.value === "MANAGE_BRAND") {
     form.value.brandId = "";
@@ -491,8 +522,6 @@ const fetchProducts = async () => {
   try {
     const res = await getAllProducts();
     products.value = res.data.result;
-  } catch (err) {
-    console.error(err);
   } finally {
     loading.value = false;
   }
@@ -501,23 +530,46 @@ const fetchProducts = async () => {
 const submitForm = async () => {
   if (form.value.variants.length === 0)
     return alert("Vui lòng thêm ít nhất 1 variant");
+
+  loading.value = true;
   try {
     if (isEditing.value) {
       await updateProduct(editingId.value, form.value);
       alert("Cập nhật thành công");
     } else {
-      await createProduct(form.value);
-      alert("Thêm sản phẩm thành công");
+      const formData = new FormData();
+
+      // Clone form để xóa các trường tạm trước khi gửi JSON
+      const productPayload = JSON.parse(JSON.stringify(form.value));
+      productPayload.variants.forEach((v) => {
+        delete v.fileRaw;
+        delete v.previewUrl;
+      });
+
+      formData.append("product", JSON.stringify(productPayload));
+
+      form.value.variants.forEach((v) => {
+        if (v.fileRaw) {
+          formData.append("images", v.fileRaw);
+        } else {
+          formData.append("images", new File([], "empty"));
+        }
+      });
+
+      await createProduct(formData);
+      alert("Thêm sản phẩm và upload ảnh thành công");
     }
     fetchProducts();
     resetForm();
   } catch (err) {
-    alert("Lỗi khi lưu sản phẩm");
+    alert(err.response?.data?.message || "Lỗi hệ thống");
+  } finally {
+    loading.value = false;
   }
 };
 
 const removeProduct = async (id) => {
-  if (!confirm("Xóa sản phẩm này sẽ xóa tất cả variant liên quan?")) return;
+  if (!confirm("Xóa sản phẩm này?")) return;
   await deleteProduct(id);
   fetchProducts();
 };
@@ -550,14 +602,16 @@ const addVariantRow = () => {
     imageUrl: "",
     attributes: { color: "", size: "" },
     isActive: true,
+    fileRaw: null,
+    previewUrl: "",
   });
 };
+
 const removeVariant = (index) => form.value.variants.splice(index, 1);
 const showVariants = (p) => {
   selectedVariants.value = p.variants || [];
   variantModal.value = true;
 };
-
 const fetchBrands = async () => {
   const res = await getAllBrands();
   brands.value = res.data.result;
@@ -581,7 +635,6 @@ const deleteBrandAction = async (id) => {
     fetchBrands();
   }
 };
-
 const fetchCategories = async () => {
   const res = await getAllCategories();
   categories.value = res.data.result;

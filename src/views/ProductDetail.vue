@@ -7,14 +7,14 @@
   <div class="container-fluid mt-4 px-4" v-else>
     <div class="row">
       <div class="col-lg-4 col-md-4 mb-4">
-        <img
+        <img  
           :src="selectedImage"
           class="img-fluid product-image shadow-sm w-100"
           style="object-fit: cover; border-radius: 8px"
         />
       </div>
 
-      <div class="col-lg-4 col-md-4 px-lg-4 mb-4">
+      <div class="col-lg-6 col-md-6 px-lg-6 mb-4">
         <h3 class="fw-bold">{{ product.name }}</h3>
         <h4 class="text-danger mt-3 mb-4">{{ formatPrice(selectedPrice) }}</h4>
         <p class="text-muted">{{ product.description }}</p>
@@ -60,7 +60,7 @@
         </button>
       </div>
 
-      <div class="col-lg-4 col-md-4 border-start">
+      <div class="col-lg-2 col-md-2 border-start">
         <h5 class="fw-bold border-bottom pb-2 mb-3">
           Đánh giá sản phẩm ({{ feedbacks.length }})
         </h5>
