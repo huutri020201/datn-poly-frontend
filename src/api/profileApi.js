@@ -56,8 +56,18 @@ const profileApi = {
   },
 
   // Admin
-  updateProfileInternal(id) {
-    return api.patch(`/profiles/${id}/internal`, {});
+  getAllProfiles(page = 1, size = 10) {
+    return api.get("/profiles", {
+      params: { page, size },
+    });
+  },
+
+  getPublicProfile(id) {
+    return api.get(`/profiles/${id}`);
+  },
+
+  updateProfileInternal(id, data) {
+    return api.patch(`/profiles/${id}/internal`, data);
   },
 };
 export default profileApi;

@@ -1,14 +1,6 @@
 import api from "./axiosClient";
 
 const userApi = {
-  getAllUsers() {
-    return api.get("/users");
-  },
-
-  createUser(data) {
-    return api.post("/users", data);
-  },
-
   updateIdentity(data) {
     return api.patch("/users/identity", data);
   },
@@ -31,11 +23,28 @@ const userApi = {
 
   // --- SECTION: ADMIN QUẢN LÝ ---
 
-  updateUser(id, data) {
-    return api.put(`/users/${id}`, data);
+  getAdminUserList(params) {
+    return api.get("/users", { params });
   },
 
-  deleteUser(id) {
+  createUser(data) {
+    return api.post("/users", data);
+  },
+
+  updateAdminProfile(id, data) {
+    return api.put(`/profiles/${id}`, data);
+  },
+
+  getAdminProfileDetail(id) {
+    return api.get(`/profiles/${id}`);
+  },
+
+  updateAdminUser(id, data) {
+    const url = `/users/${id}`;
+    return api.put(url, data);
+  },
+
+  softDeleteUser(id) {
     return api.delete(`/users/${id}`);
   },
 
@@ -53,6 +62,14 @@ const userApi = {
 
   unbanUser(id) {
     return api.post(`/users/${id}/unban`);
+  },
+
+  bulkUpdateStatus: (payload) => {
+    return api.patch("/users/bulk-status", payload);
+  },
+
+  bulkSendNotification: (payload) => {
+    return api.post("/users/bulk-notify", payload);
   },
 };
 

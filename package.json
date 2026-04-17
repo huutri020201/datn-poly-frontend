@@ -15,6 +15,7 @@
     "bootstrap-icons": "^1.13.1",
     "dayjs": "^1.11.20",
     "jwt-decode": "^4.0.0",
+    "lodash": "^4.18.1",
     "pinia": "^3.0.4",
     "swiper": "^12.1.2",
     "vue": "^3.5.25",

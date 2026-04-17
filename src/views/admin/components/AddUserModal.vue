@@ -121,19 +121,41 @@ const hide = () => {
 };
 
 const handleSubmit = async () => {
-  if (!form.email && !form.phone) {
+  if (!form.email?.trim() && !form.phone?.trim()) {
     notify.warning("Phải nhập Email hoặc Số điện thoại");
     return;
   }
 
+  if (!form.password || form.password.length < 8) {
+    notify.warning("Mật khẩu phải có ít nhất 8 ký tự");
+    return;
+  }
+
+  if (!form.roles.length) {
+    notify.warning("Phải chọn ít nhất 1 vai trò");
+    return;
+  }
+
+  const payload = {
+    email: form.email?.trim() || null,
+    phone: form.phone?.trim() || null,
+    password: form.password,
+    roles: form.roles,
+  };
+
   try {
     submitting.value = true;
-    await userApi.createUser(form);
+    await userApi.createUser(payload);
+
     notify.success("Tạo người dùng thành công");
-    emit("success"); // Báo cho cha biết để reload table
+    emit("success");
     hide();
   } catch (error) {
-    notify.error(error.message || "Không thể tạo người dùng");
+    notify.error(
+      error?.response?.data?.message ||
+        error.message ||
+        "Không thể tạo người dùng",
+    );
   } finally {
     submitting.value = false;
   }
