@@ -116,7 +116,7 @@ const handleLogout = () => {
 
             <div v-if="showMenu" class="dropdown-menu-custom shadow border-0">
               <div
-                v-if="role === 'ROLE_ADMIN'"
+                v-if="authStore.isAdmin"
                 class="dropdown-item text-primary fw-bold border-bottom"
                 @click="handleNav('/admin')"
               >
