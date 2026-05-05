@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
-import api from "@/api/axiosClient"; // Import cái api/axios của mày
+import api from "@/api/axiosClient";
 
 const route = useRoute();
 const router = useRouter();
@@ -11,26 +11,38 @@ const status = ref("processing"); // processing, success, error
 
 onMounted(async () => {
   const { token, identifier, type } = route.query;
+  console.log("FE nhận Token từ URL:", token);
+  console.log("FE nhận Identifier từ URL:", identifier);
 
   if (!token || !identifier) {
+    console.error("Lỗi: Thiếu tham số trên URL");
     status.value = "error";
     return;
   }
 
   try {
-    const res = await api.post("/auth/verify", {
+    // LOG 2: Xem dữ liệu trước khi bắn lên API
+    const payload = {
       code: token,
       identifier: identifier,
       type: type || "REGISTER",
-    });
+    };
+    console.log("Payload gửi lên BE verify:", payload);
+
+    const res = await api.post("/auth/verify", payload);
+    console.log("Kết quả từ BE:", res);
+
+    // const res = await api.post("/auth/verify", {
+    //   code: token,
+    //   identifier: identifier,
+    //   type: type || "REGISTER",
+    // });
 
     console.log("Verify Data thực tế:", res);
-
-    // VÌ INTERCEPTOR ĐÃ BÓC TÁCH, NÊN 'res' CHÍNH LÀ DỮ LIỆU CẦN TÌM
-    // Không cần dùng res.result hay res.data gì nữa.
     const dataInside = res;
 
-    if (dataInside && dataInside.verified === true) {
+    // if (dataInside && dataInside.verified === true) {
+    if (dataInside && (dataInside.verified || dataInside.auth)) {
       status.value = "success";
 
       await new Promise((resolve) => setTimeout(resolve, 2000));

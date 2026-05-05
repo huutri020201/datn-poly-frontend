@@ -34,39 +34,42 @@ const handleLogin = async () => {
     await authStore.loginUser(loginForm, loginForm.rememberMe);
     router.push("/");
   } catch (error) {
-    // Vì interceptor đã reject(error.response?.data), nên 'error' lúc này là object:
-    // { code: 1004, message: "...", metadata: { remainingAttempts: 4, ... } }
-
     const errCode = error.code;
     const errMessage = (error.message || "").toLowerCase();
+    const identifier = loginForm.identifier || "";
+    const isEmail = identifier.includes("@");
 
     if (errCode === 1004 || errMessage.includes("chưa xác thực")) {
-      // Lấy metadata trực tiếp từ error
-      resetOtpState();
       const meta = error.metadata;
-
-      // Cập nhật số lần thử từ BE
-      if (meta && typeof meta.remainingAttempts !== "undefined") {
-        remainingAttempts.value = meta.remainingAttempts;
+      if (isEmail) {
+        notify.info(
+          "Tài khoản chưa xác thực. Một email chứa liên kết xác nhận đã được gửi vào hòm thư của bạn!",
+        );
       } else {
-        // Nếu BE không trả về meta, mặc định là 5 để người dùng có thể nhập
-        remainingAttempts.value = 5;
+        resetOtpState();
+
+        if (meta && typeof meta.remainingAttempts !== "undefined") {
+          remainingAttempts.value = meta.remainingAttempts;
+        } else {
+          // Nếu BE không trả về meta, mặc định là 5 để người dùng có thể nhập
+          remainingAttempts.value = 5;
+        }
+
+        // Cập nhật thời gian đếm ngược
+        const seconds = meta?.remainingSeconds || 120;
+
+        otpCode.value = "";
+        otpError.value = "";
+
+        // Nếu thực sự hết lượt
+        if (remainingAttempts.value === 0) {
+          otpError.value =
+            "Mã OTP này đã hết lượt thử. Vui lòng đợi gửi lại mã mới!";
+        }
+
+        showOtpModal.value = true;
+        startCountdown(seconds);
       }
-
-      // Cập nhật thời gian đếm ngược
-      const seconds = meta?.remainingSeconds || 120;
-
-      otpCode.value = "";
-      otpError.value = "";
-
-      // Nếu thực sự hết lượt
-      if (remainingAttempts.value === 0) {
-        otpError.value =
-          "Mã OTP này đã hết lượt thử. Vui lòng đợi gửi lại mã mới!";
-      }
-
-      showOtpModal.value = true;
-      startCountdown(seconds);
       return;
     }
 

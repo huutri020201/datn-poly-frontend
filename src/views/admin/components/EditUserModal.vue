@@ -69,10 +69,20 @@
                   />
                 </div>
                 <div class="col-md-6">
+                  <label class="form-label fw-bold small">Mật khẩu mới</label>
+                  <input
+                    v-model="editForm.newPassword"
+                    type="password"
+                    class="form-control"
+                    placeholder=""
+                  />
+                </div>
+                <div class="col-md-6">
                   <label class="form-label fw-bold small">Trạng thái</label>
                   <select
                     v-model="editForm.status"
-                    class="form-select border-primary fw-bold"
+                    class="form-select"
+                    :disabled="isSelf"
                   >
                     <option value="ACTIVE">Hoạt động (ACTIVE)</option>
                     <option value="UNVERIFIED">Chưa xác minh</option>
@@ -80,6 +90,9 @@
                     <option value="PENDING_DELETION">Chờ xóa</option>
                     <option value="DELETED">Đã xóa mềm</option>
                   </select>
+                  <small v-if="isSelf" class="text-muted italic"
+                    >Bạn không thể tự đổi trạng thái của mình</small
+                  >
                 </div>
 
                 <div class="col-12">
@@ -95,10 +108,14 @@
                         class="form-check-input"
                         type="checkbox"
                         value="ROLE_ADMIN"
+                        :disabled="isSelf"
                         id="roleAdmin"
                       />
                       <label class="form-check-label" for="roleAdmin"
-                        >ADMIN</label
+                        >ADMIN
+                        <span v-if="isSelf" class="badge bg-secondary"
+                          >Bắt buộc</span
+                        ></label
                       >
                     </div>
                     <div class="form-check">
@@ -181,9 +198,11 @@
                   />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label fw-bold small">Điểm hạng</label>
+                  <label class="form-label small fw-bold"
+                    >Điểm tích lũy (Rank Point)</label
+                  >
                   <input
-                    v-model="editForm.rankPoint"
+                    v-model.number="editForm.rankPoint"
                     type="number"
                     class="form-control"
                   />
@@ -232,8 +251,10 @@
                   <span class="fw-bold">{{ editForm.id }}</span>
                 </div>
                 <div class="list-group-item d-flex justify-content-between">
-                  <span class="text-muted">Ngày tạo:</span>
-                  <span>{{ formatDate(editForm.createdAt) }}</span>
+                  <span class="text-muted">Ngày tạo tài khoản</span>
+                  <span class="fw-bold">{{
+                    formatDate(editForm.createdAt)
+                  }}</span>
                 </div>
                 <div class="list-group-item d-flex justify-content-between">
                   <span class="text-muted">Đăng nhập cuối:</span>
@@ -273,11 +294,21 @@
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from "vue";
+import { ref, inject, onMounted, computed } from "vue";
 import userApi from "@/api/userApi";
+import { useAuthStore } from "@/stores/authStore";
 import * as bootstrap from "bootstrap";
 
-const props = defineProps(["user"]); // Nhận user từ trang cha
+const authStore = useAuthStore();
+
+const isSelf = computed(() => {
+  const currentId = editForm.value.id;
+  const loggedInId = authStore.user?.id || authStore.user?.identityId;
+  console.log(">>> [DEBUG] So sánh ID:", currentId, "với", loggedInId);
+  return currentId === loggedInId;
+});
+
+const props = defineProps(["user"]);
 const emit = defineEmits(["success"]);
 const notify = inject("$notify");
 
@@ -310,24 +341,50 @@ onMounted(() => {
   }
 });
 
-// Hàm hiển thị và map dữ liệu
-// EditUserModal.vue
-const show = (userData) => {
-  editForm.value = { ...editForm.value };
+const show = async (userFromList) => {
+  loading.value = true;
+  console.log(">>> [DEBUG] ID nhận từ list:", userFromList.id);
+  try {
+    const [userRes, profileRes] = await Promise.all([
+      userApi.getUserAdminDetail(userFromList.id),
+      userApi.getAdminProfileDetail(userFromList.id),
+    ]);
 
-  editForm.value.id = userData.id;
-  editForm.value.email = userData.email;
-  editForm.value.phone = userData.phone;
-  editForm.value.status = userData.status;
-  editForm.value.twoFactorEnabled = userData.twoFactorEnabled;
+    console.log(">>> [DEBUG] User Detail API:", userRes);
+    console.log(">>> [DEBUG] Profile Detail API:", profileRes);
 
-  editForm.value.roles = userData.roles || [];
-  if (!bsModal.value && modalRef.value) {
-    bsModal.value = new bootstrap.Modal(modalRef.value);
-  }
+    const fullData = { ...userRes, ...profileRes };
+    const u = userRes.data || userRes.result || userRes;
+    const p = profileRes.data || profileRes.result || profileRes;
 
-  if (bsModal.value) {
-    bsModal.value.show();
+    editForm.value = {
+      id: u.id,
+      email: u.email,
+      phone: u.phone,
+      status: u.status,
+      roles: u.roles || [],
+      isMfaVerified: u.mfaVerified || u.isMfaVerified || false,
+      twoFactorEnabled: u.twoFactorEnabled || false,
+      banReason: u.banReason || "",
+      failedAttemptCount: u.failedAttemptCount || 0,
+      createdAt: u.createdAt,
+
+      fullName: p.fullName || "",
+      nickname: p.nickname || "",
+      rankPoint: p.rankPoint !== undefined ? p.rankPoint : 0,
+      membershipLevel: p.membershipLevel || "BRONZE",
+      avatarUrl: p.avatarUrl || "",
+      newPassword: "",
+    };
+
+    console.log(">>> [DEBUG] Form sau khi map:", editForm.value);
+
+    if (bsModal.value) bsModal.value.show();
+  } catch (error) {
+    console.error(">>> [DEBUG] Lỗi lấy chi tiết:", error);
+    notify.error("Không thể tải chi tiết người dùng!");
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -335,10 +392,10 @@ const hide = () => {
   bsModal.value?.hide();
 };
 
-// EditUserModal.vue
 const handleSave = async () => {
   loading.value = true;
   try {
+    // 1. Data cho User API
     const userData = {
       email: editForm.value.email,
       phone: editForm.value.phone,
@@ -351,9 +408,14 @@ const handleSave = async () => {
       roles: editForm.value.roles,
     };
 
+    // 2. Data cho Profile API (Phải gửi đủ các field nhạy cảm)
     const profileData = {
+      fullName: editForm.value.fullName,
+      nickname: editForm.value.nickname,
       rankPoint: editForm.value.rankPoint,
       membershipLevel: editForm.value.membershipLevel || "BRONZE",
+      // Nếu có dob thì gửi luôn, không thì để null
+      dob: editForm.value.dob || null,
     };
 
     await Promise.all([
@@ -361,12 +423,14 @@ const handleSave = async () => {
       userApi.updateAdminProfile(editForm.value.id, profileData),
     ]);
 
-    notify.success("Hệ thống đã cập nhật dữ liệu đồng bộ!");
-    emit("success");
+    notify.success("Cập nhật thành công!");
+    emit("success"); // Để trang cha load lại bảng
     hide();
   } catch (error) {
     console.error("Lỗi cập nhật:", error);
-    notify.error(error.response?.data?.message || "Cập nhật thất bại!");
+    // Hiển thị lỗi chi tiết từ Backend (nếu có)
+    const msg = error.response?.data?.message || "Cập nhật thất bại!";
+    notify.error(msg);
   } finally {
     loading.value = false;
   }
