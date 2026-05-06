@@ -29,7 +29,10 @@
             <router-link to="/admin/feedback" class="nav-item">
               <i class="bi bi-chat-left-dots me-2"></i> Feedbacks
             </router-link>
-
+            <router-link to="/admin/dashboard" class="nav-item">
+              <i class="bi bi-pie-chart-fill me-2"></i> Thống kê
+            </router-link>
+ 
             <hr class="my-4" />
 
             <router-link to="/" class="nav-item text-muted">

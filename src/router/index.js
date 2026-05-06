@@ -145,6 +145,11 @@ const routes = [
         name: "admin-feedback",
         component: () => import("@/views/admin/FeedbackManagement.vue"),
       },
+      {
+        path: "dashboard",
+        name: "admin-dashboard",
+        component: () => import("@/views/admin/Dashboard.vue"),
+      },
     ],
   },
 ];
