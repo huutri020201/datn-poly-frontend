@@ -536,7 +536,7 @@ export default {
     decreaseQty(item) {
       if (item.quantity > 1) {
         item.quantity -= 1;
-        this.updateItem(item);
+        this.updateItem(item); 
       }
     },
     async updateItem(item) {
